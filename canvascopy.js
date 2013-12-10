@@ -71,7 +71,6 @@ function copyGaussian(source, dest) {
 
 // Bilinear interpolation
 function copyBilinear(source, dest) {
-
   function getPixel(imageData, x, y) {
     var width = imageData.width;
     var height = imageData.data.length / 4 / width;
@@ -134,11 +133,11 @@ function copyBicubic(source, dest) {
     var data = imageData.data;
     var pixel = [];
     var x0 = Math.max(x1 - 1, 0);
-    var x2 = Math.min(x1 + 1, width);
-    var x3 = Math.min(x1 + 2, width);
+    var x2 = Math.min(x1 + 1, width-1);
+    var x3 = Math.min(x1 + 2, width-1);
     var y0 = Math.max(y1 - 1, 0);
-    var y2 = Math.min(y1 + 1, height);
-    var y3 = Math.min(y1 + 2, height);
+    var y2 = Math.min(y1 + 1, height-1);
+    var y3 = Math.min(y1 + 2, height-1);
     for (var offset = 0; offset < 4; offset++) {
       newVal = bicubic(x % 1, y % 1,
         data[(y0 * width + x0) * 4 + offset],
