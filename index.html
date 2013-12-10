@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <title>canvascopy test</title>
+    <style>
+      canvas {
+        display: block;
+      }
+      #file {
+        text-align: right;
+      }
+      #input {
+        display: none;
+      }
+      input {
+        float: right;
+      }
+      .row {
+        display: block;
+        height: 20px;
+        width: 100%;
+        margin-bottom: 1em;
+        text-align: left;
+      }
+      form {
+        max-width: 400px;
+        text-align: right;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>canvascopy test</h1>
+    <form>
+      <label class="row">pick an image: <input type="file" id="file"></label>
+      <label class="row">new width (in px) <input type="number" id="width" value="128"></label>
+      <select id="type" class="row">
+        <option value="0">Auto</option>
+        <option value="1">Gaussian downsampling</option>
+        <option value="2">Bilinear upsampling</option>
+        <option value="3">Bicubic upsampling</option>
+        <option value="4">No Scaling</option>
+      </select>
+      <button id="go">Go!</button>
+    </form>
+    <canvas id="input"></canvas>
+    <canvas id="output"></canvas>
+    <script src="canvascopy.js"></script>
+    <script>
+
+      var fileInput = document.querySelector('#file');
+
+      document.querySelector('form').addEventListener('submit', resize);
+
+      function resize(e) {
+        e.preventDefault();
+        if (!fileInput.files.length) {
+            return;
+        }
+        var file = fileInput.files[0];
+        var url = URL.createObjectURL(file);
+        var i = new Image();
+        i.onload = function() {
+            var name = file.name.split('.');
+            name.pop();
+            name = name.join('.');
+            drawScaled(i, name);
+        };
+        i.src = url;
+      }
+
+      function drawScaled(img) {
+        var width = document.querySelector('#width').value;
+        var type = document.querySelector('#type').value;
+        var input = document.querySelector('#input');
+        var output = document.querySelector('#output');
+        input.width = img.width;
+        input.height = img.height;
+        var inputCtx = input.getContext('2d');
+        var outputCtx = output.getContext('2d');
+        inputCtx.drawImage(img, 0, 0);
+        width = parseInt(width, 10) || 128;
+        height = img.height * width / img.width | 0;
+        output.width = width;
+        output.height = height;
+        outputData = outputCtx.getImageData(0, 0, width, height);
+        inputData = inputCtx.getImageData(0, 0, img.width, img.height);
+        if (type === '0') {
+          outputCtx.putImageData(copyResized(inputData, outputData), 0, 0);
+        } else if (type === '1') {
+          outputCtx.putImageData(copyGaussian(inputData, outputData), 0, 0);
+        } else if (type === '2') {
+          outputCtx.putImageData(copyBilinear(inputData, outputData), 0, 0);
+        } else if (type === '3') {
+          outputCtx.putImageData(copyBicubic(inputData, outputData), 0, 0);
+        } else {
+          outputCtx.drawImage(input, 0, 0, img.width, img.height, 0, 0, width, height);
+        }
+        console.log(width, type);
+      }
+    </script>
+  </body>
+</html>
